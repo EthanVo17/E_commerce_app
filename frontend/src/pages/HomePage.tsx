@@ -1,9 +1,14 @@
-function HomePage() {
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRight, faChartLine } from "@fortawesome/free-solid-svg-icons";
+import Header from "../components/common/header/Header";
+import Footer from "../components/common/Footer";
+
+export default function HomePage() {
   return (
-    <>
-      <div></div>
-    </>
+    <div className=" text-black">
+      <Header />
+      <main></main>
+      <Footer />
+    </div>
   );
 }
-
-export default HomePage;
