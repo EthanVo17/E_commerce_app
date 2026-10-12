@@ -28,7 +28,8 @@ export default function RightHeader() {
     };
 
     document.addEventListener("pointerdown", handleOutsideClick);
-    return () => document.removeEventListener("pointerdown", handleOutsideClick);
+    return () =>
+      document.removeEventListener("pointerdown", handleOutsideClick);
   }, [isOpen]);
 
   const handleOptionClick = (option: string) => {
@@ -42,11 +43,11 @@ export default function RightHeader() {
         id="right-header"
         className="ml-auto flex gap-4 items-center justify-center">
         <div id="login-btn">
-          <Link to={{ pathname: "/login" }}>
+          <Link to={{ pathname: "/signin" }}>
             <Button
               type="button"
               className="w-[120px] h-[36px] text-black text-lg font-medium shadow-xs border-black rounded-4xl border-[2px] border-solid bg-[#fff] cursor-pointer">
-              Login
+              Sign in
             </Button>
           </Link>
         </div>
@@ -70,7 +71,7 @@ export default function RightHeader() {
             aria-label="Select language"
             className="cursor-pointer"
             onClick={() => setIsOpen((open) => !open)}>
-          <FontAwesomeIcon icon={faGlobe} className="text-xl" />
+            <FontAwesomeIcon icon={faGlobe} className="text-xl" />
           </button>
 
           {isOpen && <DropDown items={Languages} onClick={handleOptionClick} />}

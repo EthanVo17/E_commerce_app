@@ -2,6 +2,9 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import HomePage from "@/pages/HomePage";
+import SignInPage from "@/pages/SignInPage";
+import SignUpPage from "@/pages/SignUpPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 interface RouteProps {
   path: string;
@@ -10,11 +13,12 @@ interface RouteProps {
 }
 const publicRoutes: RouteProps[] = [
   { path: "/", element: <HomePage />, layout: null },
-  { path: "/login", element: <></>, layout: null },
-  { path: "/register", element: <></>, layout: null },
+  { path: "/signin", element: <SignInPage />, layout: null },
+  { path: "/signup", element: <SignUpPage />, layout: null },
   { path: "/user:slug", element: <></>, layout: null },
   { path: "/product/productid:slug", element: <></>, layout: null },
   { path: "/support", element: <></>, layout: null },
+  { path: "/404_not_found", element: <NotFoundPage />, layout: null },
 ];
 
 const FallBack = (): any => {
