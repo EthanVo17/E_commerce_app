@@ -8,7 +8,7 @@ import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import SearchInput from "@/components/ui/search/SearchInput";
 
 export default function LeftHeader() {
-  const categories = [];
+  const categories = ["", "", ""];
   const [hover, setHover] = React.useState(false);
   return (
     <>
@@ -37,8 +37,8 @@ export default function LeftHeader() {
             id="category"
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
-            className="flex items-center justify-center w-auto h-[36px] pl-[10px] pr-[10px] ml-[15px] mr-[15px]  hover:border-[#d4d6d6] hover:border-black hover:border rounded-sm cursor-pointer">
-            <p className="text-black text-lg font-medium">Categories</p>
+            className="flex items-center justify-center text-black w-auto h-[36px] pl-[10px] pr-[10px] ml-[15px] mr-[15px]  hover:border-[#d4d6d6] hover:border-black hover:border rounded-sm cursor-pointer">
+            <p className="text-lg font-medium">Categories</p>
             <FontAwesomeIcon icon={faAngleDown} />
           </div>
 

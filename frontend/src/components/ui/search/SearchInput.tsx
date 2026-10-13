@@ -9,7 +9,7 @@ export default function SearchInput() {
       <div className="relative">
         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
           <svg
-            className="w-4 h-4 text-body"
+            className="w-4 h-4 text-body text-black"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -27,7 +27,7 @@ export default function SearchInput() {
         <input
           type="search"
           id="search"
-          className="block w-[320px] rounded-sm p-3 ps-9 bg-neutral-secondary-medium border border-default-medium text-heading text-sm focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+          className="block w-[320px] rounded-sm border border-gray-300 bg-white p-3 ps-9 text-sm text-black shadow-xs placeholder:text-gray-500 focus:border-gray-500 focus:ring-gray-300"
           placeholder="Search"
           required
         />

@@ -18,11 +18,11 @@ export default function NotFoundPage() {
           <Link
             to="/"
             className="bg-gray-800 hover:bg-black px-7 py-2.5 text-white rounded-md active:scale-95 transition-all">
-            <p>Return Home</p>
+            <p className="text-white">Return Home</p>
           </Link>
           <Link
             to="/support"
-            className="border border-gray-300 px-7 py-2.5 rounded-md active:scale-95 transition-all">
+            className="border border-gray-300 px-7 py-2.5 rounded-md active:scale-95 transition-all hover:bg-[#f0f0f0]">
             <p className="text-gray-900">Contact support</p>
           </Link>
         </div>

@@ -1,42 +1,28 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
+import { MainLayout } from "@/layouts/MainLayout";
 import HomePage from "@/pages/HomePage";
 import SignInPage from "@/pages/SignInPage";
 import SignUpPage from "@/pages/SignUpPage";
 import NotFoundPage from "@/pages/NotFoundPage";
-
-interface RouteProps {
-  path: string;
-  element: React.JSX.Element;
-  layout: React.JSX.Element | null;
-}
-const publicRoutes: RouteProps[] = [
-  { path: "/", element: <HomePage />, layout: null },
-  { path: "/signin", element: <SignInPage />, layout: null },
-  { path: "/signup", element: <SignUpPage />, layout: null },
-  { path: "/user:slug", element: <></>, layout: null },
-  { path: "/product/productid:slug", element: <></>, layout: null },
-  { path: "/support", element: <></>, layout: null },
-  { path: "/404_not_found", element: <NotFoundPage />, layout: null },
-];
-
-const FallBack = (): any => {
-  <div className="flex justify-center items-center h-sreen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600" />
-  </div>;
-};
+import ProductPage from "@/pages/ProductPage";
+import SupportPage from "@/pages/SupportPage";
 
 export default function AppRoutes() {
   return (
-    <React.Suspense fallback={<FallBack />}>
+    <React.Suspense fallback={<div className="min-h-screen bg-white" />}>
       <Routes>
-        {publicRoutes.map((route: RouteProps, index) => {
-          return (
-            <Route key={index} path={route.path} element={route.element} />
-          );
-        })}
-        <Route />
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/product/:productId" element={<ProductPage />} />
+          <Route path="/support" element={<SupportPage />} />
+        </Route>
+        <Route path="/signin" element={<SignInPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/user/:slug" element={<div />} />
+        <Route path="/404_not_found" element={<NotFoundPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </React.Suspense>
   );

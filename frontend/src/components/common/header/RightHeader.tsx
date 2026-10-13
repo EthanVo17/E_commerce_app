@@ -69,7 +69,7 @@ export default function RightHeader() {
             aria-expanded={isOpen}
             aria-controls="dropdownNavbar"
             aria-label="Select language"
-            className="cursor-pointer"
+            className="cursor-pointer text-black"
             onClick={() => setIsOpen((open) => !open)}>
             <FontAwesomeIcon icon={faGlobe} className="text-xl" />
           </button>

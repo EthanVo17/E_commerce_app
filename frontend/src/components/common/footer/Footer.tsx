@@ -8,15 +8,15 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/[0.07]">
+    <footer className="border-t border-gray-200 text-black">
       <footer className="bg-neutral-primary">
         <div className="mx-auto w-full max-w-screen-xl">
           <div className="grid grid-cols-2 gap-8 px-4 py-6 lg:py-8 md:grid-cols-4">
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-heading uppercase">
+              <h2 className="mb-6 text-sm font-semibold text-black uppercase">
                 Company
               </h2>
-              <ul className="text-body font-medium">
+              <ul className="font-medium text-black">
                 <li className="mb-4">
                   <a href="#" className=" hover:underline">
                     About
@@ -40,10 +40,10 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-heading uppercase">
+              <h2 className="mb-6 text-sm font-semibold text-black uppercase">
                 Help center
               </h2>
-              <ul className="text-body font-medium">
+              <ul className="font-medium text-black">
                 <li className="mb-4">
                   <a href="#" className="hover:underline">
                     Discord Server
@@ -67,10 +67,10 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-heading uppercase">
+              <h2 className="mb-6 text-sm font-semibold text-black uppercase">
                 Legal
               </h2>
-              <ul className="text-body font-medium">
+              <ul className="font-medium text-black">
                 <li className="mb-4">
                   <a href="#" className="hover:underline">
                     Privacy Policy
@@ -89,10 +89,10 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-heading uppercase">
+              <h2 className="mb-6 text-sm font-semibold text-black uppercase">
                 Download
               </h2>
-              <ul className="text-body font-medium">
+              <ul className="font-medium text-black">
                 <li className="mb-4">
                   <a href="#" className="hover:underline">
                     iOS
@@ -117,14 +117,14 @@ export default function Footer() {
             </div>
           </div>
           <div className="px-4 py-6 bg-neutral-secondary-soft md:flex md:items-center md:justify-between">
-            <span className="text-sm text-body sm:text-center">
+            <span className="text-sm text-black sm:text-center">
               © 2023 <a href="https://localhost:5173.com/">Brands™</a>. All
               Rights Reserved.
             </span>
             <div className="flex mt-4 sm:justify-center md:mt-0 space-x-2 rtl:space-x-reverse">
               <Link
                 to="https://www.facebook.com"
-                className="text-body hover:text-heading">
+                className="text-black hover:text-gray-700">
                 <svg
                   className="w-5 h-5"
                   aria-hidden="true"
@@ -143,7 +143,7 @@ export default function Footer() {
               </Link>
               <Link
                 to="https://discord.com/community"
-                className="text-body hover:text-heading ms-5">
+                className="ms-5 text-black hover:text-gray-700">
                 <svg
                   className="w-5 h-5"
                   aria-hidden="true"
@@ -158,7 +158,7 @@ export default function Footer() {
               </Link>
               <Link
                 to="https://x.com/"
-                className="text-body hover:text-heading ms-5">
+                className="ms-5 text-black hover:text-gray-700">
                 <svg
                   className="w-5 h-5"
                   aria-hidden="true"
@@ -173,7 +173,7 @@ export default function Footer() {
               </Link>
               <Link
                 to="https://github.com/EthanVo17"
-                className="text-body hover:text-heading ms-5">
+                className="ms-5 text-black hover:text-gray-700">
                 <svg
                   className="w-5 h-5"
                   aria-hidden="true"

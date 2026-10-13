@@ -6,18 +6,14 @@ import Footer from "@/components/common/footer/Footer";
 
 export const MainLayout = () => {
   return (
-    <div className="">
-      <div>
-        <Header />
+    <div className="flex min-h-screen flex-col bg-white">
+      <Header />
+      <div className="flex-1">
+        <Container>
+          <Outlet />
+        </Container>
       </div>
-      <div>
-        <main>
-          <Container />
-        </main>
-      </div>
-      <div>
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };
