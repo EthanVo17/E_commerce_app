@@ -31,15 +31,15 @@ export default function SignInPage() {
           <h2 className="text-4xl font-medium text-gray-900">Sign in</h2>
 
           <p className="mt-4 text-base text-gray-500/90">
-            Please enter email and password to access.
+            Please enter your phone number and password to access.
           </p>
 
           <div className="mt-10">
             <label className="font-medium mt-4 text-base text-gray-900">
-              Email
+              Phone number
             </label>
             <input
-              placeholder="Please enter your email"
+              placeholder="Please your phone number"
               className="mt-2 rounded-md ring ring-gray-200 focus:ring-2 focus:ring-indigo-600 outline-none px-3 py-3 w-full text-gray-900 placeholder:text-gray-500"
               required
               type="email"
@@ -63,7 +63,7 @@ export default function SignInPage() {
           <button
             type="submit"
             className="mt-8 py-3 w-full cursor-pointer rounded-md bg-indigo-600 text-white transition hover:bg-indigo-700">
-            Login
+            Sign in
           </button>
           <p className="text-center py-8 text-gray-900">
             Don't have an account?{" "}

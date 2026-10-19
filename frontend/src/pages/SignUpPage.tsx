@@ -29,15 +29,15 @@ export default function SignUpPage() {
           <h2 className="text-4xl font-medium text-gray-900">Sign up</h2>
 
           <p className="mt-4 text-base text-gray-500/90">
-            Please enter email and password to access.
+            Please enter your phone number and password to access.
           </p>
 
           <div className="mt-10">
             <label className="font-medium mt-4 text-base text-gray-900">
-              Email
+              Phone number
             </label>
             <input
-              placeholder="Please enter your email"
+              placeholder="Please enter your phone number"
               className="mt-2 rounded-md ring ring-gray-200 focus:ring-2 focus:ring-indigo-600 outline-none px-3 py-3 w-full text-gray-900 placeholder:text-gray-500"
               required
               type="email"

@@ -2,81 +2,68 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGlobe } from "@fortawesome/free-solid-svg-icons";
-
 import Button from "@/components/ui/button/Button";
-import DropDown from "@/components/ui/dropdown/DropDown";
+import Avatar from "@/components/ui/avatar/Avatar";
+import AvatarDropDown from "@/components/ui/avatar/AvatarDropDown";
+import LanguageSelector from "@/components/ui/dropdown/LanguageSelector";
 
 export default function RightHeader() {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [selectedOption, setSelectedOption] = React.useState("English");
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = React.useState(false);
+  const avatarMenuRef = React.useRef<HTMLDivElement>(null);
 
-  const Languages = ["English", "Vietnamese", "Chinese"];
+  // Replace this placeholder with the authenticated user from application state.
+  const user = { name: "Joseph McFall", email: "name@flowbite.com" };
 
   React.useEffect(() => {
-    if (!isOpen) return;
-
+    if (!isAvatarMenuOpen) return;
     const handleOutsideClick = (event: PointerEvent) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        avatarMenuRef.current &&
+        !avatarMenuRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        setIsAvatarMenuOpen(false);
       }
     };
-
     document.addEventListener("pointerdown", handleOutsideClick);
     return () =>
       document.removeEventListener("pointerdown", handleOutsideClick);
-  }, [isOpen]);
+  }, [isAvatarMenuOpen]);
 
-  const handleOptionClick = (option: string) => {
-    setSelectedOption(option);
-    setIsOpen(false);
-  };
   return (
-    <>
-      {/**Right header */}
-      <div
-        id="right-header"
-        className="ml-auto flex gap-4 items-center justify-center">
-        <div id="login-btn">
-          <Link to={{ pathname: "/signin" }}>
+    <div
+      id="right-header"
+      className="ml-auto flex items-center justify-end gap-4">
+      {user ? (
+        <div ref={avatarMenuRef} className="relative">
+          <Avatar
+            isOpen={isAvatarMenuOpen}
+            onClick={() => setIsAvatarMenuOpen((open) => !open)}
+          />
+          <AvatarDropDown
+            user={user}
+            isOpen={isAvatarMenuOpen}
+            onClose={() => setIsAvatarMenuOpen(false)}
+          />
+        </div>
+      ) : (
+        <>
+          <Link to="/signin">
             <Button
               type="button"
-              className="w-[120px] h-[36px] text-black text-lg font-medium shadow-xs border-black rounded-4xl border-[2px] border-solid bg-[#fff] cursor-pointer">
+              className="h-[36px] w-[120px] cursor-pointer rounded-4xl border-2 border-solid border-black bg-white text-lg font-medium text-black shadow-xs">
               Sign in
             </Button>
           </Link>
-        </div>
-
-        <div id="sign-up-btn">
-          <Link to={{ pathname: "/signup" }}>
+          <Link to="/signup">
             <Button
               type="button"
-              className="w-[120px] h-[36px] text-black text-lg font-medium shadow-xs border-black rounded-4xl border-[2px] border-solid bg-[#fff] cursor-pointer">
+              className="h-[36px] w-[120px] cursor-pointer rounded-4xl border-2 border-solid border-black bg-white text-lg font-medium text-black shadow-xs">
               Sign up
             </Button>
           </Link>
-        </div>
-
-        <div ref={dropdownRef} className="relative">
-          <button
-            id="dropdownLargeButton"
-            type="button"
-            aria-expanded={isOpen}
-            aria-controls="dropdownNavbar"
-            aria-label="Select language"
-            className="cursor-pointer text-black"
-            onClick={() => setIsOpen((open) => !open)}>
-            <FontAwesomeIcon icon={faGlobe} className="text-xl" />
-          </button>
-
-          {isOpen && <DropDown items={Languages} onClick={handleOptionClick} />}
-        </div>
-      </div>
-    </>
+        </>
+      )}
+      <LanguageSelector />
+    </div>
   );
 }
