@@ -43,12 +43,8 @@ router.use(
 router.post("/login", loginLimiter, Login);
 router.post("/register", registerLimiter, Register);
 
-router.get(
-  "/user",
-  RequireAuth,
-  (req: express.Request, res: express.Response) => {
-    res.json({ userId: res.locals.user.userId });
-  },
-);
+router.get("/user", RequireAuth, (res: express.Response) => {
+  res.json({ userId: res.locals.user.userId });
+});
 
 export { router };
