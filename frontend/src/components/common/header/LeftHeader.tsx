@@ -42,7 +42,21 @@ export default function LeftHeader() {
             <FontAwesomeIcon icon={faAngleDown} />
           </div>
 
-          {hover && <div className=""></div>}
+          {hover && (
+            <div className="">
+              (
+              <ul>
+                {categories.map(
+                  (category: string, index: number): React.ReactNode => (
+                    <li key={index} className="">
+                      {category}
+                    </li>
+                  ),
+                )}
+              </ul>
+              )
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -4,7 +4,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Button from "@/components/ui/button/Button";
 import Avatar from "@/components/ui/avatar/Avatar";
-import AvatarDropDown from "@/components/ui/avatar/AvatarDropDown";
+import AvatarDropDown from "@/components/ui/dropdown/AvatarDropDown";
 import LanguageSelector from "@/components/ui/dropdown/LanguageSelector";
 
 export default function RightHeader() {
@@ -13,6 +13,7 @@ export default function RightHeader() {
 
   // Replace this placeholder with the authenticated user from application state.
   const user = { name: "Joseph McFall", email: "name@flowbite.com" };
+  // const user = false;
 
   React.useEffect(() => {
     if (!isAvatarMenuOpen) return;
