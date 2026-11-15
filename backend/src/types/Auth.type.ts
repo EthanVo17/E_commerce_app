@@ -23,5 +23,5 @@ export interface Auth {
   loginAttempts: number;
 
   locked?: Date;
-  tokens?: string[];
+  tokens?: { token: string }[];
 }

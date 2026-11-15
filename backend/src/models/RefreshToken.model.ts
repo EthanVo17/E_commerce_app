@@ -17,12 +17,13 @@ const RefreshTokenSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    rememberMe: { type: Boolean, default: true },
   },
 
   { timestamps: true },
 );
 
-RefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+RefreshTokenSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
 const RefreshTokenModel = mongoose.model("RefreshSession", RefreshTokenSchema);
 

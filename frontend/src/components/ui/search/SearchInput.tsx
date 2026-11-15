@@ -35,8 +35,11 @@ export default function SearchInput() {
     event.preventDefault();
     let value = query.trim();
     try {
-      await axiosClient.post(`/search?q=${encodeURIComponent(value)}`);
-      handleAdd(value);
+      const response = await axiosClient.post(
+        `/search?q=${encodeURIComponent(value)}`,
+      );
+
+      handleAdd(response.data.data);
     } catch (err) {
       console.log({ message: `No product name ${value}`, err });
       setStoreQuery([...storequery, value]);

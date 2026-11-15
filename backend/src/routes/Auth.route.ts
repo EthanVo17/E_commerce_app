@@ -1,50 +1,15 @@
 import express from "express";
 import { rateLimit } from "express-rate-limit";
-
 import { Login, Register, Refresh, Logout } from "../controllers/Auth.js";
 import { RequireAuth } from "../middlewares/RequireAuth.js";
 
 const router: express.Router = express.Router();
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 20,
-  standardHeaders: "draft-8",
-  legacyHeaders: false,
-  skipSuccessfulRequests: true,
-  message: {
-    message: "Too many login attempts. Try again later.",
-  },
-});
-
-const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  limit: 10,
-  legacyHeaders: false,
-  standardHeaders: "draft-8",
-  message: {
-    message: "Too many registration requests. Try again later.",
-  },
-});
-
-router.use(
-  (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const origin = req.get("origin");
-
-    if (origin || origin !== process.env.FRONTEND_URL) {
-      res.status(403).json({ message: "Origin not allowed" });
-      return;
-    }
-
-    next();
-  },
-);
-
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false, message: { message: "Too many login attempts. Try again later." } });
+const refreshLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 60, standardHeaders: "draft-8", legacyHeaders: false });
+const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false });
 router.post("/login", loginLimiter, Login);
+router.post("/refresh", refreshLimiter, Refresh);
+router.post("/logout", Logout);
 router.post("/register", registerLimiter, Register);
-
-router.get("/user", RequireAuth, (res: express.Response) => {
-  res.json({ userId: res.locals.user.userId });
-});
-
+router.get("/user", RequireAuth, (_req, res) => res.json({ user: res.locals.user }));
 export { router };

@@ -12,8 +12,8 @@ export default function RightHeader() {
   const avatarMenuRef = React.useRef<HTMLDivElement>(null);
 
   // Replace this placeholder with the authenticated user from application state.
-  const user = { name: "Joseph McFall", email: "name@flowbite.com" };
-  // const user = false;
+  // const user = { name: "Joseph McFall", email: "name@flowbite.com" };
+  const user = false;
 
   React.useEffect(() => {
     if (!isAvatarMenuOpen) return;

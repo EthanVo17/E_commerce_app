@@ -1,68 +1,36 @@
 import "dotenv/config";
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 import { randomUUID } from "node:crypto";
+import type { Auth } from "../types/Auth.type.js";
 
-import type { Auth as userType } from "../types/Auth.type.js";
-
-function UserIdentifier(user: userType) {
-  const User = user._id;
-  if (!User) {
-    throw new Error("User id is missing");
-  }
-
-  return user._id.toString();
+function requiredSecret(name: string): string {
+  const secret = process.env[name];
+  if (!secret || secret.length < 32) throw new Error(`${name} must be at least 32 characters`);
+  return secret;
 }
-
-const AccessSecretToken = process.env.JWT_SECRET as string;
-const RefreshSecretToken = process.env.JWT_REFRESH_SECRET as string;
-
-if (AccessSecretToken === RefreshSecretToken) {
+const accessSecret: string = requiredSecret("JWT_SECRET");
+const refreshSecret: string = requiredSecret("JWT_REFRESH_SECRET");
+if (accessSecret === refreshSecret) {
   throw new Error("JWT secrets must be different");
 }
 
 export const REFRESH_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
+export type UserRole = Auth["role"];
+type AuthPayload = JwtPayload & { userId: string; role: UserRole; tokenType: "access" | "refresh" };
 
-export function generateAccessToken(userId: string) {
-  return jwt.sign({ userId, tokenType: String }, AccessSecretToken, {
-    algorithm: "HS256",
-    expiresIn: "15m",
-  });
+export function generateAccessToken(userId: string, role: UserRole): string {
+  return jwt.sign({ userId, role, tokenType: "access" }, accessSecret, { algorithm: "HS256", expiresIn: "15m" });
 }
-
-export function generateRefreshToken(userId: string) {
-  return jwt.sign({ userId, tokenType: String }, RefreshSecretToken, {
-    algorithm: "HS256",
-    expiresIn: "7d",
-    jwtid: randomUUID(),
-  });
+export function generateRefreshToken(userId: string): string {
+  return jwt.sign({ userId, tokenType: "refresh" }, refreshSecret, { algorithm: "HS256", expiresIn: "7d", jwtid: randomUUID() });
 }
-
-function verify(
-  token: string,
-  secretToken: string,
-  tokentype: "access" | "refresh",
-) {
-  const payload = jwt.verify(token, secretToken, {
-    algorithms: ["HS256"],
-  });
-
-  console.log(payload);
-  if (
-    typeof payload === "string" ||
-    payload.tokenType !== tokentype ||
-    typeof payload.userId !== "string" ||
-    !/^[a-f\d]{24}$/i.test(payload.userId)
-  ) {
+function verify(token: string, secret: string, tokenType: AuthPayload["tokenType"]): AuthPayload {
+  const payload = jwt.verify(token, secret, { algorithms: ["HS256"] });
+  if (typeof payload === "string" || payload.tokenType !== tokenType || typeof payload.userId !== "string" || !/^[a-f\d]{24}$/i.test(payload.userId)) {
     throw new Error("Invalid token payload");
   }
-
-  return { userId: payload.userid };
+  if (tokenType === "access" && !["user", "admin", "seller"].includes(String(payload.role))) throw new Error("Invalid role");
+  return payload as AuthPayload;
 }
-
-export function veryfyAccessToken(token: string) {
-  return verify(token, AccessSecretToken, "access");
-}
-
-export function veryfyRefreshToken(token: string) {
-  return verify(token, RefreshSecretToken, "refresh");
-}
+export function verifyAccessToken(token: string): AuthPayload { return verify(token, accessSecret, "access"); }
+export function verifyRefreshToken(token: string): AuthPayload { return verify(token, refreshSecret, "refresh"); }

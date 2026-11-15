@@ -15,14 +15,23 @@ import { ErrorHandler } from "./middlewares/ErrorHandler.js";
 const app: express.Express = express();
 
 const port = Number(process.env.PORT ?? 3000);
-const frontendURL = process.env.FRONTEND_URL;
+// FRONTEND_URL may contain a comma-separated list when the app is deployed.
+// Strip wrapping quotes and trailing semicolons so common .env formatting does
+// not make an otherwise-correct origin fail the exact CORS comparison.
+const frontendURLs = (process.env.FRONTEND_URL ?? "http://localhost:5173")
+  .split(",")
+  .map((url) => url.trim().replace(/^['\"]|['\"]$/g, "").replace(/;+$/, ""))
+  .filter(Boolean);
 
 const corsOptions = {
-  origin: frontendURL,
+  origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
+    // Requests without an Origin header (for example health checks) are not
+    // browser cross-origin requests and should pass through normally.
+    if (!origin || frontendURLs.includes(origin)) return callback(null, true);
+    return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  },
   credentials: true,
 };
-
-const helmetOptions = {};
 
 app.use(cors(corsOptions));
 app.use(
@@ -31,8 +40,7 @@ app.use(
       defaultSrc: ["'self'"],
       connectSrc: [
         "'self'",
-        `http://localhost:${port}`,
-        `http://localhost:${port}`,
+        ...frontendURLs,
       ],
       // reportUri: "/api/csp-violation-report",
     },
