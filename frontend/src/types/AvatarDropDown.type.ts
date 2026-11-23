@@ -1,7 +1,8 @@
 export interface AvatarUser {
-  name: string;
+  fullName: string;
   email?: string;
-  avatarUrl?: string;
+  phoneNumber?: string;
+  avatarUrl?: string | null;
 }
 
 export interface AvatarMenuItem {

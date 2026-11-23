@@ -1,69 +1,52 @@
 "use strict";
 
-import React from "react";
 import { Link } from "react-router-dom";
-import Button from "@/components/ui/button/Button";
-import Avatar from "@/components/ui/avatar/Avatar";
-import AvatarDropDown from "@/components/ui/dropdown/AvatarDropDown";
 import LanguageSelector from "@/components/ui/dropdown/LanguageSelector";
+import UserAvatarDropdown from "@/components/ui/dropdown/UserAvatarDropdown";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function RightHeader() {
-  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = React.useState(false);
-  const avatarMenuRef = React.useRef<HTMLDivElement>(null);
-
-  // Replace this placeholder with the authenticated user from application state.
-  // const user = { name: "Joseph McFall", email: "name@flowbite.com" };
-  const user = false;
-
-  React.useEffect(() => {
-    if (!isAvatarMenuOpen) return;
-    const handleOutsideClick = (event: PointerEvent) => {
-      if (
-        avatarMenuRef.current &&
-        !avatarMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsAvatarMenuOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", handleOutsideClick);
-    return () =>
-      document.removeEventListener("pointerdown", handleOutsideClick);
-  }, [isAvatarMenuOpen]);
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isInitializing = useAuthStore((s) => s.isInitializing);
 
   return (
     <div
       id="right-header"
-      className="ml-auto flex items-center justify-end gap-4">
-      {user ? (
-        <div ref={avatarMenuRef} className="relative">
-          <Avatar
-            isOpen={isAvatarMenuOpen}
-            onClick={() => setIsAvatarMenuOpen((open) => !open)}
-          />
-          <AvatarDropDown
-            user={user}
-            isOpen={isAvatarMenuOpen}
-            onClose={() => setIsAvatarMenuOpen(false)}
-          />
-        </div>
+      className="ml-auto flex items-center justify-end gap-3 sm:gap-4"
+    >
+      {/* 1. Khi đang kiểm tra phiên: Hiển thị Skeleton Circle */}
+      {isInitializing ? (
+        <div
+          data-testid="header-auth-skeleton"
+          className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-slate-200"
+          aria-label="Đang kiểm tra phiên đăng nhập..."
+        />
+      ) : isAuthenticated && user ? (
+        /* 2. Khi đã đăng nhập: Hiển thị Avatar + Dropdown */
+        <UserAvatarDropdown user={user} />
       ) : (
-        <>
+        /* 3. Khi chưa đăng nhập: Hiển thị 2 nút Đăng nhập (ghost) và Đăng ký (nổi bật) */
+        <div data-testid="guest-auth-buttons" className="flex items-center gap-2 sm:gap-3">
           <Link to="/signin">
-            <Button
+            <button
               type="button"
-              className="h-[36px] w-[120px] cursor-pointer rounded-4xl border-2 border-solid border-black bg-white text-lg font-medium text-black shadow-xs">
-              Sign in
-            </Button>
+              className="h-[36px] min-w-[96px] cursor-pointer rounded-full border border-slate-300 bg-transparent px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-black focus:outline-none focus:ring-2 focus:ring-slate-300"
+            >
+              Đăng nhập
+            </button>
           </Link>
           <Link to="/signup">
-            <Button
+            <button
               type="button"
-              className="h-[36px] w-[120px] cursor-pointer rounded-4xl border-2 border-solid border-black bg-white text-lg font-medium text-black shadow-xs">
-              Sign up
-            </Button>
+              className="h-[36px] min-w-[96px] cursor-pointer rounded-full border border-transparent bg-orange-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            >
+              Đăng ký
+            </button>
           </Link>
-        </>
+        </div>
       )}
+
       <LanguageSelector />
     </div>
   );

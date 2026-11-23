@@ -11,17 +11,15 @@ import {
   verifyRefreshToken,
 } from "../jwt/jwt.js";
 import type { Auth } from "../types/Auth.type.js";
+import { normalizePhone, isValidPhoneNumber } from "../utils/phoneNumber.js";
 
 const COOKIE_NAME = "refreshToken";
 const DUMMY_PASSWORD_HASH = bcrypt.hashSync("not-a-real-user-password", 10);
 const phoneSchema = z
   .string()
   .trim()
-  .transform((phone) => phone.replace(/[\s()-]/g, ""))
-  .transform((phone) =>
-    /^0\d{9}$/.test(phone) ? `+84${phone.slice(1)}` : phone,
-  )
-  .refine((phone) => /^\+84\d{9}$/.test(phone), "Invalid phone number");
+  .transform(normalizePhone)
+  .refine(isValidPhoneNumber, "Invalid phone number");
 const loginSchema = z
   .object({
     phoneNumber: phoneSchema,
@@ -36,8 +34,8 @@ const registerSchema = loginSchema.extend({
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
-  path: "/api/auth",
+  sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax",
+  path: "/",
 };
 const hashToken = (token: string) =>
   createHash("sha256").update(token).digest("hex");
@@ -51,7 +49,7 @@ function setRefreshCookie(res: Response, token: string, rememberMe = true) {
     token,
     rememberMe
       ? { ...cookieOptions, maxAge: REFRESH_LIFETIME_MS }
-      : cookieOptions,
+      : { ...cookieOptions, maxAge: 24 * 60 * 60 * 1000 },
   );
 }
 function clearRefreshCookie(res: Response) {
@@ -63,6 +61,7 @@ function publicUser(user: Auth) {
     name: user.name,
     email: user.email,
     phoneNumber: user.phoneNumber,
+    avatarUrl: user.avatar ?? null,
     role: user.role,
   };
 }
@@ -96,6 +95,14 @@ export async function Login(req: Request, res: Response): Promise<void> {
   );
   if (!user || !passwordMatches) {
     res.status(401).json({ message: "Phone number or password is incorrect." });
+    return;
+  }
+  if (!user.isPhoneVerified) {
+    res.status(403).json({
+      message: "Số điện thoại chưa được xác thực. Vui lòng xác thực mã OTP để đăng nhập.",
+      isPhoneVerified: false,
+      phoneNumber: user.phoneNumber,
+    });
     return;
   }
   if (user.locked && user.locked.getTime() > Date.now()) {

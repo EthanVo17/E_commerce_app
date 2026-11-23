@@ -14,9 +14,8 @@ const UserSchema = new mongoose.Schema<Auth>(
     email: {
       type: String,
       trim: true,
-      required: true,
       lowercase: true,
-      default: null,
+      sparse: true,
     },
 
     password: {
@@ -30,6 +29,12 @@ const UserSchema = new mongoose.Schema<Auth>(
       required: true,
       trim: true,
       unique: true,
+    },
+
+    isPhoneVerified: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
 
     avatar: {
@@ -48,7 +53,7 @@ const UserSchema = new mongoose.Schema<Auth>(
 
     role: {
       type: String,
-      enum: ["user", "admin", "seller"],
+      enum: ["user", "admin"],
       default: "user",
     },
 

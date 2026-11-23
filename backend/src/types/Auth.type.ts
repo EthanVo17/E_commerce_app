@@ -3,10 +3,11 @@ import mongoose from "mongoose";
 export interface Auth {
   _id: mongoose.Types.ObjectId;
   name: string;
-  email: string;
+  email?: string;
   phoneNumber: string;
   password: string;
-  avatar: string;
+  isPhoneVerified: boolean;
+  avatar?: string;
   addresses: {
     street: string;
     ward: string;
@@ -15,7 +16,7 @@ export interface Auth {
     isDefault: boolean;
   }[];
 
-  role: "user" | "admin" | "seller";
+  role: "user" | "admin";
   cart: {
     product: mongoose.Types.ObjectId;
     quantity: number;

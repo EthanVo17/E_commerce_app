@@ -8,18 +8,36 @@ import SignUpPage from "@/pages/SignUpPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import ProductPage from "@/pages/ProductPage";
 import SupportPage from "@/pages/SupportPage";
+import GuestRoute from "@/components/common/guards/GuestRoute";
+import ProtectedRoute from "@/components/common/guards/ProtectedRoute";
 
 export default function AppRoutes() {
   return (
     <React.Suspense fallback={<div className="min-h-screen bg-white" />}>
       <Routes>
+        {/* Public routes with main layout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/product/:productId" element={<ProductPage />} />
           <Route path="/support" element={<SupportPage />} />
         </Route>
-        <Route path="/signin" element={<SignInPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
+
+        {/* Guest-only routes (redirect away if already authenticated) */}
+        <Route element={<GuestRoute />}>
+          <Route path="/signin" element={<SignInPage />} />
+          <Route path="/login" element={<SignInPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+        </Route>
+
+        {/* Protected routes (require authentication) */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/profile" element={<div>Profile Page</div>} />
+            <Route path="/settings" element={<div>Settings Page</div>} />
+            <Route path="/orders" element={<div>Orders Page</div>} />
+          </Route>
+        </Route>
+
         <Route path="/user/:slug" element={<div />} />
         <Route path="/404_not_found" element={<NotFoundPage />} />
         <Route path="*" element={<NotFoundPage />} />

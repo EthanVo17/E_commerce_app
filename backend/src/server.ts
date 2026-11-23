@@ -23,11 +23,15 @@ const frontendURLs = (process.env.FRONTEND_URL ?? "http://localhost:5173")
   .map((url) => url.trim().replace(/^['\"]|['\"]$/g, "").replace(/;+$/, ""))
   .filter(Boolean);
 
+const isDev = process.env.NODE_ENV !== "production";
 const corsOptions = {
   origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
     // Requests without an Origin header (for example health checks) are not
     // browser cross-origin requests and should pass through normally.
     if (!origin || frontendURLs.includes(origin)) return callback(null, true);
+    if (isDev && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
     return callback(new Error(`Origin ${origin} is not allowed by CORS`));
   },
   credentials: true,
