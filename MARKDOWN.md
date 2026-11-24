@@ -24,7 +24,7 @@ project-root/
 - Đã có giao diện sẵn nên đừng chỉnh sửa quá nhiều về giao diện.
 - Cấm tự ý sửa schema database, migration hoặc hardcode API key, secret, thông tin nhạy cảm.
 - Chỉ sửa đúng phần được giao, không tự refactor lan sang file hoặc tính năng không liên quan; chia nhỏ task thay vì giao một cục lớn.
-- Viết code phải refector, không nên đưa hết code vào một file.
+- Viết code phải refector, không nên đưa hết code vào một file. Chia nhỏ file code.
 - Bắt buộc viết unit test/kiểm tra lỗi sau khi sửa code, không tự kết luận "đã xong" nếu chưa chạy kiểm chứng
 
 # Requirements

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 import type { SearchType } from "../types/Search.type.js";
-import { ref } from "node:process";
 
 const SearchSchema = new mongoose.Schema<SearchType>(
   {

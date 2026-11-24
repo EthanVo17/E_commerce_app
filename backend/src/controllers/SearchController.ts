@@ -8,6 +8,11 @@ const searchProductByName = async (
 ) => {
   try {
     const keyword = String(req.query.q ?? "").trim();
+    if (!keyword) {
+      res.status(400).json({
+        message: "Search keyword is required",
+      });
+    }
 
     const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -21,8 +26,13 @@ const searchProductByName = async (
       .lean();
 
     return res.status(200).json({
+      success: true,
+      message: "Search successful",
       total: products.length,
-      data: products,
+      data: {
+        keyword,
+        products,
+      },
     });
   } catch {
     res.status(500).json({ message: "Product not found" });
