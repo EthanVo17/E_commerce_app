@@ -16,30 +16,43 @@ export interface ProductOptionType {
 export interface ProductVariantType {
   sku: string;
   options: Record<string, string>;
-  price: number;
-  compareAtPrice?: number;
-  stock: number;
   image?: string;
+
+  price: number;
+  oldPrice?: number;
+
+  stock: number;
   isActive: boolean;
 }
 
 /** Persisted product data. Prices are numeric amounts in the product currency. */
 export interface ProductType {
-  name: string;
+  _id?: Types.ObjectId;
+  id: string;
   slug: string;
+  name: string;
   brand: string;
-  description: string;
-  highlights: string[];
   images: string[];
+  stockLabel: number;
+  highlights: string[];
+
   price: number;
-  compareAtPrice?: number;
+  oldPrice: number;
+  soldLabel: number;
+  soldCount: number;
   currency: string;
+  stock: number;
+
   rating: number;
   reviewCount: number;
-  soldCount: number;
-  stock: number;
-  options: ProductOptionType[];
-  variants: ProductVariantType[];
+
+  variantLabel: string;
+  variantHint: string;
+  description: string;
+
   category: Types.ObjectId;
   isActive: boolean;
+
+  variants: ProductVariantType[];
+  options: ProductOptionType[];
 }

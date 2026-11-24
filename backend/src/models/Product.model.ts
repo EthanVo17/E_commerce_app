@@ -28,7 +28,7 @@ const ProductVariantSchema = new mongoose.Schema<ProductVariantType>(
     // Example: { size: "42", color: "black" }
     options: { type: Map, of: String, required: true },
     price: { type: Number, required: true, min: 0 },
-    compareAtPrice: { type: Number, min: 0 },
+    oldPrice: { type: Number, min: 0 },
     stock: { type: Number, default: 0, min: 0 },
     image: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
@@ -53,7 +53,7 @@ const ProductSchema = new mongoose.Schema<ProductType>(
     images: { type: [String], default: [] },
     // Base/default price is used when the product has no variants.
     price: { type: Number, required: true, min: 0 },
-    compareAtPrice: { type: Number, min: 0 },
+    oldPrice: { type: Number, required: true, min: 0 },
     currency: { type: String, default: "VND", uppercase: true, trim: true },
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0, min: 0 },
@@ -65,6 +65,15 @@ const ProductSchema = new mongoose.Schema<ProductType>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "categories",
       required: true,
+    },
+    soldLabel: {
+      type: Number,
+    },
+    variantHint: {
+      type: String,
+    },
+    variantLabel: {
+      type: String,
     },
     isActive: { type: Boolean, default: true, index: true },
   },
