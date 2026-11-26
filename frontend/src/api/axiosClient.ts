@@ -2,7 +2,9 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 
 const rawURL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
-const baseURL = String(rawURL).trim().replace(/^['"]|['"]$/g, "");
+const baseURL = String(rawURL)
+  .trim()
+  .replace(/^['"]|['"]$/g, "");
 
 const axiosClient = axios.create({
   baseURL,

@@ -1,11 +1,18 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import SearchDropDownUI from "../dropdown/SearchDropDownUI";
-import axiosClient from "@/api/axiosClient";
+import {
+  addSearchHistoryItem,
+  loadSearchHistory,
+  saveSearchHistory,
+} from "@/utils/searchHistory";
 
 export default function SearchInput() {
+  const navigate = useNavigate();
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const [query, setQuery] = React.useState("");
-  const [storequery, setStoreQuery] = React.useState<string[]>(["Nike shoes"]);
+  const [storequery, setStoreQuery] =
+    React.useState<string[]>(loadSearchHistory);
   const [showSearchHistory, setShowSearchHistory] = React.useState(false);
 
   React.useEffect(() => {
@@ -18,39 +25,33 @@ export default function SearchInput() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  const handleAdd = (keyword: string) => {
-    if (!keyword) return;
+  React.useEffect(() => {
+    saveSearchHistory(storequery);
+  }, [storequery]);
 
-    setStoreQuery((prev) => {
-      const filtered = prev.filter((prevFiltered) => {
-        return prevFiltered.toLocaleLowerCase() !== keyword.toLocaleLowerCase();
-      });
-      return [keyword, ...filtered];
-    });
-    setShowSearchHistory(true);
-    setQuery("");
+  const handleAdd = (keyword: string) => {
+    setStoreQuery((prev) => addSearchHistoryItem(prev, keyword));
   };
 
-  const handleSearch = async (event: any) => {
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    let value = query.trim();
-    try {
-      const response = await axiosClient.post(
-        `/search?q=${encodeURIComponent(value)}`,
-      );
+    const value = query.trim();
+    if (!value) return;
 
-      handleAdd(response.data.data);
-    } catch (err) {
-      console.log({ message: `No product name ${value}`, err });
-      setStoreQuery([...storequery, value]);
-    } finally {
-      handleAdd(value);
-    }
+    handleAdd(value);
+    setShowSearchHistory(false);
+    navigate(`/search?q=${encodeURIComponent(value)}`);
+  };
+
+  const handleSelectSuggestion = (keyword: string) => {
+    setQuery(keyword);
+    handleAdd(keyword);
+    setShowSearchHistory(false);
   };
 
   return (
     <div ref={wrapperRef} className="relative w-[320px]">
-      <form className="w-full" autoComplete="off">
+      <form className="w-full" autoComplete="off" onSubmit={handleSearch}>
         <label htmlFor="search" className="sr-only">
           Search
         </label>
@@ -80,18 +81,20 @@ export default function SearchInput() {
             value={query}
             onFocus={() => setShowSearchHistory(true)}
             onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && handleSearch(event)}
           />
           <button
             type="submit"
-            onClick={handleSearch}
             className="absolute end-1.5 bottom-1.5 cursor-pointer rounded bg-brand px-3 py-1.5 text-xs font-medium leading-5 text-black shadow-xs hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-brand-medium">
             Search
           </button>
         </div>
       </form>
       {showSearchHistory && (
-        <SearchDropDownUI value={query} listSearch={storequery} />
+        <SearchDropDownUI
+          value={query}
+          listSearch={storequery}
+          onSelect={handleSelectSuggestion}
+        />
       )}
     </div>
   );

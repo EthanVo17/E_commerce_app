@@ -8,6 +8,7 @@ import SignUpPage from "@/pages/SignUpPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import ProductPage from "@/pages/ProductPage";
 import SupportPage from "@/pages/SupportPage";
+import SearchPage from "@/pages/SearchPage";
 import GuestRoute from "@/components/common/guards/GuestRoute";
 import ProtectedRoute from "@/components/common/guards/ProtectedRoute";
 
@@ -18,6 +19,7 @@ export default function AppRoutes() {
         {/* Public routes with main layout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/product/:productId" element={<ProductPage />} />
           <Route path="/support" element={<SupportPage />} />
         </Route>

@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-interface Props {
-  value: string;
-  listSearch: string[];
-}
+import type { SearchDropDownProps } from "@/types/search";
 
-export default function SearchDropDownUI({ value, listSearch }: Props) {
+export default function SearchDropDownUI({
+  value,
+  listSearch,
+  onSelect,
+}: SearchDropDownProps) {
   const suggestions =
     listSearch.length > 0 ? listSearch : value.trim() ? [value] : [];
 
@@ -13,34 +14,20 @@ export default function SearchDropDownUI({ value, listSearch }: Props) {
       {suggestions.length > 0 ? (
         <ul className="m-0 list-none space-y-1 p-0">
           {suggestions.map((item, index) => (
-            <Link
-              key={`${item}-${index}`}
-              //add path product and search query here
-              to={{
-                pathname: "/some/path",
-                search: "?query=string",
-                hash: "#hash",
-              }}>
-              <li>
-                <button
-                  type="button"
-                  className="flex h-9 w-full items-center rounded-lg px-3 text-left text-sm text-black transition-colors hover:bg-gray-100 focus:bg-gray-100 focus:outline-none">
-                  {item}
-                </button>
-              </li>
-            </Link>
+            <li key={`${item}-${index}`}>
+              <Link
+                to={`/search?q=${encodeURIComponent(item)}`}
+                onClick={() => onSelect?.(item)}
+                className="flex h-9 w-full items-center rounded-lg px-3 text-left text-sm text-black transition-colors hover:bg-gray-100 focus:bg-gray-100 focus:outline-none">
+                {item}
+              </Link>
+            </li>
           ))}
         </ul>
       ) : (
-        <>
-          {listSearch.length === 0 ? (
-            <div className="flex h-9 items-center px-3 text-sm text-gray-500">
-              Start typing to see suggestions
-            </div>
-          ) : (
-            <></>
-          )}
-        </>
+        <div className="flex h-9 items-center px-3 text-sm text-gray-500">
+          Start typing to see suggestions
+        </div>
       )}
     </div>
   );

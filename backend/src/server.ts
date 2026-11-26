@@ -20,21 +20,28 @@ const port = Number(process.env.PORT ?? 3000);
 // not make an otherwise-correct origin fail the exact CORS comparison.
 const frontendURLs = (process.env.FRONTEND_URL ?? "http://localhost:5173")
   .split(",")
-  .map((url) => url.trim().replace(/^['\"]|['\"]$/g, "").replace(/;+$/, ""))
+  .map((url) => url.trim().replace(/^['\"]|['\"]$/g, ""))
   .filter(Boolean);
 
 const isDev = process.env.NODE_ENV !== "production";
+const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 const corsOptions = {
-  origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
-    // Requests without an Origin header (for example health checks) are not
-    // browser cross-origin requests and should pass through normally.
+  origin: (
+    origin: string | undefined,
+    callback: (error: Error | null, allowed?: boolean) => void,
+  ) => {
     if (!origin || frontendURLs.includes(origin)) return callback(null, true);
-    if (isDev && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    if (isDev && isLocalhost.test(origin)) {
       return callback(null, true);
     }
     return callback(new Error(`Origin ${origin} is not allowed by CORS`));
   },
+
   credentials: true,
+
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
@@ -42,10 +49,7 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      connectSrc: [
-        "'self'",
-        ...frontendURLs,
-      ],
+      connectSrc: ["'self'", ...frontendURLs],
       // reportUri: "/api/csp-violation-report",
     },
     reportOnly: true,
