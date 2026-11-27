@@ -13,8 +13,9 @@ export function formatVND(amount: number): string {
 
 export function mapApiProductToProduct(item: ApiProduct): Product {
   const numericPrice = typeof item.price === "number" ? item.price : undefined;
+  const rawOldPrice = item.originalPrice ?? item.oldPrice;
   const numericOldPrice =
-    typeof item.oldPrice === "number" ? item.oldPrice : undefined;
+    typeof rawOldPrice === "number" ? rawOldPrice : undefined;
 
   const hasDiscount =
     numericPrice !== undefined &&
@@ -22,10 +23,17 @@ export function mapApiProductToProduct(item: ApiProduct): Product {
     numericOldPrice > numericPrice &&
     numericOldPrice > 0;
 
+  const computedDiscountPercentage =
+    typeof item.discountPercentage === "number" && item.discountPercentage > 0
+      ? item.discountPercentage
+      : hasDiscount
+        ? Math.round(((numericOldPrice - numericPrice) / numericOldPrice) * 100)
+        : undefined;
+
   const computedDiscountLabel =
     item.discountLabel ??
-    (hasDiscount
-      ? `-${Math.round(((numericOldPrice - numericPrice) / numericOldPrice) * 100)}%`
+    (computedDiscountPercentage && computedDiscountPercentage > 0
+      ? `-${computedDiscountPercentage}%`
       : undefined);
 
   const categoryName =
@@ -35,35 +43,69 @@ export function mapApiProductToProduct(item: ApiProduct): Product {
         ? item.category
         : "Sản phẩm";
 
+  const categorySlug =
+    typeof item.category === "object" && item.category !== null
+      ? item.category.slug
+      : undefined;
+
   const images =
     Array.isArray(item.images) && item.images.length > 0
       ? item.images
       : [FALLBACK_IMAGE];
 
+  const soldCount = Number(item.soldCount ?? 0);
+  const stock = typeof item.stock === "number" ? item.stock : undefined;
+  const structuredVariants = Array.isArray(item.variants)
+    ? item.variants.filter((variant) => variant && variant.isActive !== false)
+    : undefined;
+  const options = Array.isArray(item.options) ? item.options : undefined;
+
+  const normalizedSlug =
+    typeof item.slug === "string" && item.slug.trim()
+      ? item.slug.trim()
+      : undefined;
+
   return {
-    id: String(item.slug ?? item._id ?? item.id ?? ""),
+    id: String(normalizedSlug ?? item._id ?? item.id ?? ""),
+    slug: normalizedSlug,
     name: item.name ?? "",
     brand: item.brand ?? "",
     category: categoryName,
+    categorySlug,
     price:
       numericPrice !== undefined
         ? formatVND(numericPrice)
         : String(item.price ?? "0₫"),
+    numericPrice,
     oldPrice: hasDiscount
       ? formatVND(numericOldPrice)
-      : typeof item.oldPrice === "string"
-        ? item.oldPrice
+      : typeof rawOldPrice === "string"
+        ? rawOldPrice
         : undefined,
+    numericOldPrice: hasDiscount ? numericOldPrice : undefined,
+    discountPercentage: computedDiscountPercentage,
     discountLabel: computedDiscountLabel,
     images,
     rating: Number(item.rating ?? 0),
     reviewCount: Number(item.reviewCount ?? 0),
-    soldLabel: String(item.soldLabel ?? item.soldCount ?? 0),
+    soldCount,
+    soldLabel: String(item.soldLabel ?? soldCount),
+    location: item.location,
+    stock,
     variantLabel: item.variantLabel,
     variantHint: item.variantHint,
     stockLabel:
-      typeof item.stock === "number" ? `Còn ${item.stock} sản phẩm` : undefined,
+      stock !== undefined
+        ? stock > 0
+          ? `Còn ${stock} sản phẩm`
+          : "Hết hàng"
+        : undefined,
     description: item.description ?? "",
     highlights: Array.isArray(item.highlights) ? item.highlights : [],
+    specifications: Array.isArray(item.specifications)
+      ? item.specifications
+      : [],
+    options,
+    structuredVariants,
   };
 }

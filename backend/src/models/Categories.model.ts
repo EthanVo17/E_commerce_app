@@ -8,6 +8,11 @@ const CategoriesSchema = new mongoose.Schema<CategoriesType>({
     required: true,
     trim: true,
   },
+  slug: {
+    type: String,
+    trim: true,
+    lowercase: true,
+  },
 });
 
 const CategoriesModel = mongoose.model<CategoriesType>(

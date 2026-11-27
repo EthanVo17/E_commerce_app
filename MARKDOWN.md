@@ -4,7 +4,7 @@ Bạn là một Senior Full-stack Developer chuyên về kiến trúc hệ thố
 
 # Task
 
-Hãy viết bộ cấu hình Docker hoàn chỉnh cho môi trường Production (và gợi ý cấu hình Development nếu cần) cho dự án của tôi.
+<!-- Hãy viết bộ cấu hình Docker hoàn chỉnh cho môi trường Production (và gợi ý cấu hình Development nếu cần) cho dự án của tôi. -->
 
 project-root/
 ├── frontend/ # React SPA (Vite) + TypeScript + TailwindCSS
@@ -14,7 +14,7 @@ project-root/
 
 # Tech Stack
 
-- **Frontend:** React, TypeScript, TailwindCSS, Zustand, Axios, [React Hook Form + Zod]
+- **Frontend:** React + Vite, TypeScript, TailwindCSS, Zustand, Axios, react-router-dom, Zod
 - **Backend:** Node.js + Express, TypeScript
 - **Database & Cache:** MongoDB (Mongoose), Redis
 - **Cơ chế xác thực:** JWT (Access Token + Refresh Token lưu trong HttpOnly Cookie)
@@ -29,35 +29,79 @@ project-root/
 
 # Requirements
 
-## 1. Quản lý trạng thái xác thực toàn cục (Auth Store)
+##### Backend
 
-- Tạo `useAuthStore` (Zustand) lưu trữ:
-  - `user`: Thông tin cơ bản (`id`, `fullName`, `email`, `phoneNumber`, `avatarUrl`, `role`) hoặc `null`.
-  - `accessToken`: Lưu trong bộ nhớ ứng dụng (RAM), không lưu vào `localStorage`.
-  - `isAuthenticated`: Boolean xác định trạng thái đăng nhập.
-  - `isInitializing`: Boolean (mặc định `true`) để tránh hiện tượng nhấp nháy giao diện (UI flickering) hiển thị nhầm nút Login trong lúc app đang kiểm tra phiên đăng nhập khi vừa tải lại trang.
-- Cung cấp các actions: `setAuth(user, accessToken)`, `logout()`, và `initializeAuth()` (gọi `/api/auth/refresh` hoặc `/api/users/me` ngay khi app khởi chạy để khôi phục phiên từ HttpOnly Cookie).
+### 1. Yêu cầu Database & Schema (MongoDB / Mongoose)
 
-## 2. Điều hướng sau khi đăng nhập thành công (Post-Login Redirect)
+- Tạo hoặc cập nhật `Product` model (`models/product.model.ts`) với các trường tiêu chuẩn thương mại điện tử:
+  - `name` (String, required), `slug` (String, unique, indexed), `description` (String), `price` (Number), `originalPrice` (Number), `discountPercentage` (Number), `images` (Array of Strings), `category` (ObjectId ref Category), `brand` (String), `stock` (Number), `soldCount` (Number, default 0), `rating` (Number, default 0), `reviewCount` (Number, default 0), `specifications` (Map hoặc Array `{ key: String, value: String }`), `variants` (Array `{ name: String, options: Array<{ label: String, priceAdjustment: Number, stock: Number }> }`), `isActive` (Boolean, default true).
+- **Indexing:** Thiết lập Text Index trên `name`, `brand`, `description` và Compound Index trên `{ isActive: 1, price: 1, soldCount: -1 }` để tối ưu tốc độ truy vấn tìm kiếm.
 
-- **Lưu trữ trang đích trước đó (`from` / `callbackUrl`):** Nếu người dùng bị chặn ở một trang riêng tư (ví dụ: `/profile`, `/orders`) và bị đẩy sang `/login`, sau khi đăng nhập thành công hãy điều hướng họ quay lại đúng trang đó; nếu truy cập trực tiếp `/login`, điều hướng về Trang chủ (`/`).
-- **Chặn truy cập ngược (Guest Route Guard):** Bọc các trang `/login`, `/signup` bằng component `GuestRoute` — nếu `isAuthenticated === true`, tự động chuyển hướng về `/` để người dùng đã đăng nhập không thể vào lại trang đăng nhập.
-- Hiển thị thông báo chào mừng (Toast notification, ví dụ: _"Đăng nhập thành công! Chào mừng [Tên user]"_).
+### 2. Yêu cầu API Endpoints & Logic xử lý
 
-## 3. Cập nhật giao diện Navbar / Header
+`product.controller.ts`, `product.service.ts` và `product.route.ts`:
 
-- **Khi chưa đăng nhập (`!isAuthenticated`):** Hiển thị 2 nút hành động rõ ràng là **Đăng nhập** (viền/ghost) và **Đăng ký** (nút chính nổi bật).
-- **Khi đang kiểm tra phiên (`isInitializing`):** Hiển thị khung xương tải trang (Skeleton circle) kích thước tương đương Avatar để giữ bố cục Header không bị giật (Layout Shift).
-- **Khi đã đăng nhập (`isAuthenticated`):**
-  - Ẩn hoàn toàn cụm nút Đăng nhập / Đăng ký.
-  - Hiển thị **Avatar người dùng** (nếu `avatarUrl` trống, tự động tạo Avatar chữ cái đầu từ `fullName`, ví dụ: _"Võ Tấn Đạt"_ -> `VĐ` trên nền màu hài hòa) kèm tên rút gọn trên màn hình Desktop.
-  - Khi click vào Avatar, mở **User Dropdown Menu** (hỗ trợ đóng khi click ra ngoài hoặc nhấn phím `Esc`) gồm các mục:
-    - Thông tin tóm tắt tài khoản (Tên + Email hoặc Số điện thoại).
-    - Link điều hướng: _Hồ sơ cá nhân (`/profile`)_, _Cài đặt tài khoản (`/settings`)_.
-    - Nút **Đăng xuất (Logout)**: Gọi API `/api/auth/logout` (để server xóa HttpOnly Cookie và thu hồi Refresh Token), gọi `logout()` trên store để xóa state ở client, và điều hướng về `/` hoặc `/login`.
+#### A. API Tìm kiếm sản phẩm: `GET /api/products/search`
 
-# Output Format
+- **Query Params:**
+  - `q` (string): Từ khóa tìm kiếm (bắt buộc hoặc trả về danh sách mặc định nếu rỗng, cần sanitize chống ReDoS).
+  - `page` (number, default: 1) & `limit` (number, default: 10).
+  - `sort` (enum: `relevance` | `newest` | `bestselling` | `price_asc` | `price_desc`).
+- **Logic tìm kiếm:**
+  - Hỗ trợ tìm kiếm kết hợp MongoDB `$text` search (tính `textScore` để xếp hạng độ liên quan) hoặc regex không phân biệt hoa thường cho từ khóa ngắn/tiếng Việt có dấu & không dấu.
+  - Chỉ trả về các trường cần thiết cho thẻ sản phẩm (Projection: `_id`, `name`, `slug`, `price`, `originalPrice`, `discountPercentage`, `images` [chỉ lấy ảnh đầu tiên], `soldCount`, `rating`, `location`) để giảm tải payload.
+  - Trả về cấu trúc chuẩn: `{ success: true, data: products, pagination: { page, limit, totalItems, totalPages } }`.
 
-1. Code chi tiết cho `useAuthStore` (bao gồm cơ chế `initializeAuth` chống nhấp nháy UI khi F5).
-2. Code chi tiết cho `Navbar` / `Header` và component `UserAvatarDropdown` (responsive cho cả Desktop và Mobile).
-3. Code chi tiết cho `GuestRoute` / `ProtectedRoute` và logic redirect trong `LoginForm`.
+#### B. API Chi tiết sản phẩm: `GET /api/products/:slug`
+
+- **Logic xử lý:**
+  - Hỗ trợ tìm kiếm linh hoạt theo `slug` (ưu tiên chuẩn SEO) hoặc `_id` (nếu chuỗi truyền vào là Valid ObjectId).
+  - Populate thông tin `category` (chỉ lấy `name`, `slug`).
+  - Nếu sản phẩm không tồn tại hoặc `isActive: false`, ném lỗi `404 Not Found` qua custom `AppError` middleware.
+  - Trả về đầy đủ thông tin sản phẩm bao gồm toàn bộ `images`, `description`, `specifications`, `variants`, `stock`, `soldCount`, `rating`.
+
+### 3. Tối ưu hiệu năng & Bảo mật
+
+- Áp dụng **Cache-Aside pattern với `ioredis`**:
+  - Cache kết quả tìm kiếm phổ biến với key dạng `search:products:<hash_query_params>` (TTL: 300s).
+  - Cache chi tiết sản phẩm với key `product:detail:<slugOrId>` (TTL: 600s).
+- Validate toàn bộ `req.query` và `req.params` bằng **Zod**.
+- Viết code sạch, tách biệt rõ ràng giữa Route -> Validation Middleware -> Controller -> Service -> Model.
+
+##### Frontend
+
+### 1. Types & API Service (`types/product.ts` & `services/product.service.ts`)
+
+- Định nghĩa interface `ProductCardItem` (cho danh sách tìm kiếm) và `ProductDetail` (kế thừa và mở rộng đầy đủ thông tin chi tiết).
+- Cấu hình Axios instance gọi tới:
+  - `searchProducts(params: SearchQueryParams)`: gọi `GET /api/products/search`.
+  - `getProductDetail(slugOrId: string)`: gọi `GET /api/products/${slugOrId}`.
+
+### 2. Trang Kết Quả Tìm Kiếm (`/search` hoặc `SearchResultsPage.tsx`)
+
+- **Đồng bộ URL Search Params:** Đọc từ khóa `q`, `page`, `sort`, `minPrice`, `maxPrice` trực tiếp từ URL để người dùng có thể F5 hoặc chia sẻ link mà không mất trạng thái tìm kiếm.
+- **Giao diện (UI/UX phong cách sàn TMĐT hiện đại):**
+  - **Header kết quả:** Hiển thị dòng thông báo `Kết quả tìm kiếm cho từ khóa "<từ khóa>"` kèm tổng số sản phẩm tìm thấy.
+  - **Thanh sắp xếp (Sort Bar):** Các nút chuyển nhanh: _Liên quan_, _Mới nhất_, _Bán chạy_, và Dropdown chọn _Giá: Thấp đến Cao / Cao đến Thấp_.
+  - **Product Grid:** Responsive grid (`grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3`).
+  - **Component `ProductCard`:**
+    - Hiển thị ảnh tỷ lệ vuông (`aspect-square object-cover`), badge giảm giá góc phải trên, tên sản phẩm giới hạn 2 dòng (`line-clamp-2`), giá bán nổi bật, giá gốc gạch ngang, đánh giá sao (FontAwesome) và số lượng đã bán.
+    - **Tương tác Click:** Toàn bộ thẻ sản phẩm là một `<Link>` (hoặc `onClick` điều hướng) dẫn tới trang chi tiết `/product/[slug]` (kèm fallback `_id`). Có hiệu ứng hover nhẹ (`hover:-translate-y-0.5 hover:shadow-md transition`).
+  - **Trạng thái tải & Rỗng:**
+    - Hiển thị **Skeleton Loading** dạng lưới thẻ sản phẩm trong lúc đang fetch API.
+    - Hiển thị **Empty State** trực quan (icon tìm kiếm + gợi ý kiểm tra chính tả/từ khóa chung chung hơn) khi không có sản phẩm nào khớp.
+  - **Phân trang (Pagination):** Nút chuyển trang mượt mà và tự động cuộn lên đầu trang (`window.scrollTo({ top: 0, behavior: 'smooth' })`) khi đổi trang.
+
+### 3. Trang Chi Tiết Sản Phẩm (`/product/[slug]` hoặc `ProductDetailPage.tsx`)
+
+- Lấy `slug` từ URL params, gọi `getProductDetail(slug)` và hiển thị đầy đủ:
+  - **Breadcrumb:** `Trang chủ > Danh mục > Tên sản phẩm`.
+  - **Cột trái (Gallery):** Ảnh chính kích thước lớn + danh sách ảnh nhỏ (thumbnails) bên dưới, click hoặc hover thumbnail sẽ đổi ảnh chính.
+  - **Cột phải (Thông tin & Mua hàng):**
+    - Tên sản phẩm, số sao đánh giá, số lượng đã bán.
+    - Khung giá nổi bật (giá bán, giá gốc, % giảm giá).
+    - **Bộ chọn phân loại hàng (Variants):** Render các nút chọn (Màu sắc, Kích thước...) cập nhật giá và tồn kho tương ứng.
+    - **Bộ chọn số lượng:** Nút `-` / `+` giới hạn không vượt quá `stock` hiện có.
+    - Nút **Thêm vào giỏ hàng** (kết nối với Zustand cart store) và **Mua ngay**.
+  - **Phần dưới:** Bảng **Thông số kỹ thuật** (`specifications`) và khung **Mô tả chi tiết sản phẩm** (`description`).
+  - Xử lý đầy đủ Skeleton loading khi đang tải dữ liệu và trang báo lỗi 404 thân thiện nếu không tìm thấy sản phẩm.

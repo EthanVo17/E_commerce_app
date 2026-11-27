@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import type { SearchEmptyStateProps } from "@/types/search";
 
 export default function SearchEmptyState({
@@ -8,6 +10,9 @@ export default function SearchEmptyState({
 }: SearchEmptyStateProps) {
   return (
     <div className="rounded-xl border border-gray-100 bg-white p-10 text-center shadow-sm">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff5f2] text-[#ee4d2d]">
+        <FontAwesomeIcon icon={faMagnifyingGlass} className="text-xl" />
+      </div>
       <p className="text-base font-semibold text-gray-800">{title}</p>
       <p className="mt-2 text-sm text-gray-500">{description}</p>
       <Link

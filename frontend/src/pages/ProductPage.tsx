@@ -1,29 +1,88 @@
-import { Link, useParams } from "react-router-dom";
-import React from "react";
-import ProductDetail from "@/components/ui/productDetail/ProductDetail";
-// import { products } from "@/data/products";
+import { useCallback } from "react";
+import { useParams } from "react-router-dom";
+import ProductDetail, {
+  type SelectedProductPurchase,
+} from "@/components/ui/productDetail/ProductDetail";
+import ProductDetailSkeleton from "@/components/ui/productDetail/ProductDetailSkeleton";
+import SearchErrorState from "@/components/ui/search/SearchErrorState";
+import { useProductDetail } from "@/hooks/useProductDetail";
 import NotFoundPage from "@/pages/NotFoundPage";
-import axiosClient from "@/api/axiosClient";
+import { useCartStore } from "@/stores/cartStore";
+import { useToastStore } from "@/stores/toastStore";
 
 export default function ProductPage() {
-  const [products, setProducts] = React.useState({});
-  // const { productId } = useParams();
-  // const product = products.find((item) => item.id === productId);
+  const { slug } = useParams<{ slug: string }>();
+  const { product, isLoading, isNotFound, error, retry } =
+    useProductDetail(slug);
 
-  const handleGetProduct = async () => {
-    try {
-      const response = await axiosClient.get("/products");
-      setProducts(response.data);
-    } catch (err) {
-      return err;
-    }
-  };
+  const addItem = useCartStore((state) => state.addItem);
+  const addToast = useToastStore((state) => state.addToast);
 
-  return product ? (
-    <ProductDetail product={product} />
-  ) : (
-    <Link to="/404_not_found">
-      <NotFoundPage />
-    </Link>
+  const handleAddToCart = useCallback(
+    (selection: SelectedProductPurchase) => {
+      addItem({
+        productId: selection.product.id,
+        slug: selection.product.slug,
+        name: selection.product.name,
+        image: selection.product.images[0] ?? "",
+        unitPrice: selection.unitPrice,
+        priceLabel: selection.priceLabel,
+        variant: selection.variantLabel || undefined,
+        sku: selection.sku,
+        quantity: selection.quantity,
+        maxStock: selection.maxStock,
+      });
+      addToast(
+        `Đã thêm ${selection.quantity} "${selection.product.name}" vào giỏ hàng`,
+        "success",
+      );
+    },
+    [addItem, addToast],
+  );
+
+  const handleBuyNow = useCallback(
+    (selection: SelectedProductPurchase) => {
+      addItem({
+        productId: selection.product.id,
+        slug: selection.product.slug,
+        name: selection.product.name,
+        image: selection.product.images[0] ?? "",
+        unitPrice: selection.unitPrice,
+        priceLabel: selection.priceLabel,
+        variant: selection.variantLabel || undefined,
+        sku: selection.sku,
+        quantity: selection.quantity,
+        maxStock: selection.maxStock,
+      });
+      addToast(
+        `Đã chọn mua ngay "${selection.product.name}" (x${selection.quantity})`,
+        "info",
+      );
+    },
+    [addItem, addToast],
+  );
+
+  if (isLoading) {
+    return <ProductDetailSkeleton />;
+  }
+
+  if (isNotFound) {
+    return <NotFoundPage />;
+  }
+
+  if (error) {
+    return <SearchErrorState message={error} onRetry={retry} />;
+  }
+
+  if (!product) {
+    return <NotFoundPage />;
+  }
+
+  return (
+    <ProductDetail
+      product={product}
+      onAddToCart={handleAddToCart}
+      onBuyNow={handleBuyNow}
+    />
   );
 }

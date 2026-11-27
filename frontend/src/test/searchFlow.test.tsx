@@ -26,7 +26,7 @@ describe("Search flow", () => {
         slug: "nike-pegasus-41",
         name: "Giày Nike Pegasus 41",
         brand: "NIKE",
-        category: { _id: "cat-1", name: "Thể thao" },
+        category: { _id: "cat-1", name: "Thể thao", slug: "the-thao" },
         price: 2490000,
         oldPrice: 2990000,
         images: ["https://example.com/shoe.jpg"],
@@ -37,6 +37,7 @@ describe("Search flow", () => {
       });
 
       expect(mapped.id).toBe("nike-pegasus-41");
+      expect(mapped.slug).toBe("nike-pegasus-41");
       expect(mapped.category).toBe("Thể thao");
       expect(mapped.price).toBe("2.490.000₫");
       expect(mapped.oldPrice).toBe("2.990.000₫");
@@ -67,25 +68,27 @@ describe("Search flow", () => {
       mockedGet.mockResolvedValueOnce({
         data: {
           success: true,
-          message: "Search successful",
-          total: 1,
-          data: {
-            keyword: "Nike",
-            products: [
-              {
-                _id: "p1",
-                slug: "nike-air-max",
-                name: "Nike Air Max 90",
-                brand: "NIKE",
-                category: { name: "Thời trang" },
-                price: 2790000,
-                oldPrice: 3190000,
-                images: ["https://example.com/airmax.jpg"],
-                rating: 4.7,
-                reviewCount: 84,
-                soldCount: 860,
-              },
-            ],
+          data: [
+            {
+              _id: "p1",
+              slug: "nike-air-max",
+              name: "Nike Air Max 90",
+              brand: "NIKE",
+              category: { name: "Thời trang" },
+              price: 2790000,
+              originalPrice: 3190000,
+              discountPercentage: 13,
+              images: ["https://example.com/airmax.jpg"],
+              rating: 4.7,
+              reviewCount: 84,
+              soldCount: 860,
+            },
+          ],
+          pagination: {
+            page: 1,
+            limit: 10,
+            totalItems: 1,
+            totalPages: 1,
           },
         },
       });
@@ -108,25 +111,109 @@ describe("Search flow", () => {
       await waitFor(() => {
         expect(mockedGet).toHaveBeenCalledTimes(1);
         expect(mockedGet).toHaveBeenCalledWith("/products/search", {
-          params: { q: "Nike" },
+          params: { q: "Nike", page: 1, limit: 10, sort: "relevance" },
         });
       });
 
       expect(await screen.findByText("Nike Air Max 90")).toBeInTheDocument();
       expect(screen.getByText("2.790.000₫")).toBeInTheDocument();
       expect(screen.getByText("Thời trang")).toBeInTheDocument();
+      expect(screen.getByText("-13%")).toBeInTheDocument();
+    });
+
+    it("updates sort and pagination params via URL search params", async () => {
+      const scrollSpy = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
+      mockedGet
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            data: [
+              {
+                _id: "p1",
+                slug: "shoe-1",
+                name: "Shoe 1",
+                price: 500000,
+                images: ["https://example.com/1.jpg"],
+                rating: 4.5,
+                soldCount: 10,
+              },
+            ],
+            pagination: { page: 1, limit: 10, totalItems: 20, totalPages: 2 },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            data: [
+              {
+                _id: "p2",
+                slug: "shoe-2",
+                name: "Shoe 2",
+                price: 300000,
+                images: ["https://example.com/2.jpg"],
+                rating: 4.9,
+                soldCount: 200,
+              },
+            ],
+            pagination: { page: 1, limit: 10, totalItems: 20, totalPages: 2 },
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            data: [
+              {
+                _id: "p3",
+                slug: "shoe-3",
+                name: "Shoe 3",
+                price: 400000,
+                images: ["https://example.com/3.jpg"],
+                rating: 4.2,
+                soldCount: 50,
+              },
+            ],
+            pagination: { page: 2, limit: 10, totalItems: 20, totalPages: 2 },
+          },
+        });
+
+      render(
+        <MemoryRouter initialEntries={["/search?q=shoe"]}>
+          <Routes>
+            <Route path="/search" element={<SearchPage />} />
+          </Routes>
+        </MemoryRouter>,
+      );
+
+      expect(await screen.findByText("Shoe 1")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Bán chạy" }));
+      await waitFor(() => {
+        expect(mockedGet).toHaveBeenCalledWith("/products/search", {
+          params: { q: "shoe", page: 1, limit: 10, sort: "bestselling" },
+        });
+      });
+
+      expect(await screen.findByText("Shoe 2")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "2" }));
+      await waitFor(() => {
+        expect(mockedGet).toHaveBeenCalledWith("/products/search", {
+          params: { q: "shoe", page: 2, limit: 10, sort: "bestselling" },
+        });
+      });
+
+      expect(await screen.findByText("Shoe 3")).toBeInTheDocument();
+      expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+      scrollSpy.mockRestore();
     });
 
     it("shows empty state when API returns no products", async () => {
       mockedGet.mockResolvedValueOnce({
         data: {
           success: true,
-          message: "Search successful",
-          total: 0,
-          data: {
-            keyword: "khongtontai",
-            products: [],
-          },
+          data: [],
+          pagination: { page: 1, limit: 10, totalItems: 0, totalPages: 0 },
         },
       });
 

@@ -10,14 +10,12 @@ import RootRoute from "./routes/RootRoute.js";
 import connectDB from "./config/database.js";
 import UserModel from "./models/User.model.js";
 import RefreshTokenModel from "./models/RefreshToken.model.js";
+import ProductModel from "./models/Product.model.js";
 import { ErrorHandler } from "./middlewares/ErrorHandler.js";
 
 const app: express.Express = express();
 
 const port = Number(process.env.PORT ?? 3000);
-// FRONTEND_URL may contain a comma-separated list when the app is deployed.
-// Strip wrapping quotes and trailing semicolons so common .env formatting does
-// not make an otherwise-correct origin fail the exact CORS comparison.
 const frontendURLs = (process.env.FRONTEND_URL ?? "http://localhost:5173")
   .split(",")
   .map((url) => url.trim().replace(/^['\"]|['\"]$/g, ""))
@@ -50,7 +48,6 @@ app.use(
     directives: {
       defaultSrc: ["'self'"],
       connectSrc: ["'self'", ...frontendURLs],
-      // reportUri: "/api/csp-violation-report",
     },
     reportOnly: true,
   }),
@@ -71,6 +68,7 @@ async function Start() {
 
   await UserModel.createIndexes();
   await RefreshTokenModel.createIndexes();
+  await ProductModel.createIndexes();
 
   app.listen(port, () => {
     console.log(`[server]: Backend đang chạy tại http://localhost:${port}`);

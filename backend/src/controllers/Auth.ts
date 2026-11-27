@@ -34,7 +34,9 @@ const registerSchema = loginSchema.extend({
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax",
+  sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+    | "none"
+    | "lax",
   path: "/",
 };
 const hashToken = (token: string) =>
@@ -99,7 +101,8 @@ export async function Login(req: Request, res: Response): Promise<void> {
   }
   if (!user.isPhoneVerified) {
     res.status(403).json({
-      message: "Số điện thoại chưa được xác thực. Vui lòng xác thực mã OTP để đăng nhập.",
+      message:
+        "Số điện thoại chưa được xác thực. Vui lòng xác thực mã OTP để đăng nhập.",
       isPhoneVerified: false,
       phoneNumber: user.phoneNumber,
     });
@@ -112,36 +115,30 @@ export async function Login(req: Request, res: Response): Promise<void> {
     return;
   }
   const accessToken = await startSession(user, res, rememberMe);
-  res
-    .status(200)
-    .json({
-      message: "Signed in successfully.",
-      user: publicUser(user),
-      accessToken,
-    });
+  res.status(200).json({
+    message: "Signed in successfully.",
+    user: publicUser(user),
+    accessToken,
+  });
 }
 
 export async function Register(req: Request, res: Response): Promise<void> {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
-    res
-      .status(400)
-      .json({
-        message:
-          "Enter valid account details. Password must contain 8 to 72 characters.",
-      });
+    res.status(400).json({
+      message:
+        "Enter valid account details. Password must contain 8 to 72 characters.",
+    });
     return;
   }
   try {
     const user = await UserModel.create(parsed.data);
     const accessToken = await startSession(user, res);
-    res
-      .status(201)
-      .json({
-        message: "Account created.",
-        user: publicUser(user),
-        accessToken,
-      });
+    res.status(201).json({
+      message: "Account created.",
+      user: publicUser(user),
+      accessToken,
+    });
   } catch (error) {
     if ((error as { code?: number }).code === 11000) {
       res
@@ -186,7 +183,7 @@ export async function Refresh(req: Request, res: Response): Promise<void> {
         expireAt: new Date(Date.now() + REFRESH_LIFETIME_MS),
       },
     },
-    { new: true },
+    { returnDocument: "after" },
   );
   if (!session) {
     clearRefreshCookie(res);
@@ -194,12 +191,10 @@ export async function Refresh(req: Request, res: Response): Promise<void> {
     return;
   }
   setRefreshCookie(res, refreshToken, session.rememberMe);
-  res
-    .status(200)
-    .json({
-      user: publicUser(user),
-      accessToken: generateAccessToken(user._id.toString(), user.role),
-    });
+  res.status(200).json({
+    user: publicUser(user),
+    accessToken: generateAccessToken(user._id.toString(), user.role),
+  });
 }
 
 export async function Logout(req: Request, res: Response): Promise<void> {

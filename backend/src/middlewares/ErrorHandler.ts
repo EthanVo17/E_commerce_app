@@ -1,9 +1,32 @@
 import type { ErrorRequestHandler } from "express";
 import mongoose from "mongoose";
+import { ZodError } from "zod";
+import { AppError } from "../utils/AppError.js";
 
 export const ErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   if (res.headersSent) {
     next(err);
+    return;
+  }
+
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+      ...(err.details !== undefined ? { errors: err.details } : {}),
+    });
+    return;
+  }
+
+  if (err instanceof ZodError) {
+    res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: err.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      })),
+    });
     return;
   }
 

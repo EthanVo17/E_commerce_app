@@ -25,6 +25,34 @@ export interface ProductVariantType {
   isActive: boolean;
 }
 
+export interface ProductSpecificationType {
+  key: string;
+  value: string;
+}
+
+export type ProductSortOption =
+  | "relevance"
+  | "newest"
+  | "bestselling"
+  | "price_asc"
+  | "price_desc";
+
+export interface SearchProductsParams {
+  q: string;
+  page: number;
+  limit: number;
+  sort: ProductSortOption;
+  minPrice?: number | undefined;
+  maxPrice?: number | undefined;
+}
+
+export interface ProductPaginationMeta {
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 /** Persisted product data. Prices are numeric amounts in the product currency. */
 export interface ProductType {
   _id?: Types.ObjectId;
@@ -49,6 +77,8 @@ export interface ProductType {
   variantLabel: string;
   variantHint: string;
   description: string;
+  specifications?: ProductSpecificationType[];
+  location?: string;
 
   category: Types.ObjectId;
   isActive: boolean;

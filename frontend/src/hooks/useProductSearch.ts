@@ -1,34 +1,64 @@
 import { useCallback, useEffect, useState } from "react";
-import { searchProducts } from "@/api/productApi";
-import type { SearchState } from "@/types/search";
+import { searchProducts } from "@/services/product.service";
+import type {
+  PaginationMeta,
+  SearchQueryParams,
+  SearchState,
+} from "@/types/search";
 
-export function useProductSearch(keyword: string) {
+const DEFAULT_PAGINATION: PaginationMeta = {
+  page: 1,
+  limit: 10,
+  totalItems: 0,
+  totalPages: 0,
+};
+
+export function useProductSearch(params: SearchQueryParams) {
   const [retryCount, setRetryCount] = useState(0);
   const [state, setState] = useState<SearchState>({
     key: "",
     products: [],
-    total: 0,
+    pagination: DEFAULT_PAGINATION,
     error: null,
   });
 
-  const requestKey = keyword ? `${keyword}::${retryCount}` : "";
+  const q = params.q.trim();
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 10;
+  const sort = params.sort ?? "relevance";
+  const minPrice = params.minPrice;
+  const maxPrice = params.maxPrice;
+
+  const requestKey = q
+    ? `${q}::${page}::${limit}::${sort}::${minPrice ?? ""}::${maxPrice ?? ""}::${retryCount}`
+    : "";
+
   const isLoading = Boolean(requestKey) && state.key !== requestKey;
   const products = state.key === requestKey ? state.products : [];
-  const total = state.key === requestKey ? state.total : 0;
+  const pagination =
+    state.key === requestKey ? state.pagination : DEFAULT_PAGINATION;
+  const total = pagination.totalItems;
   const error = state.key === requestKey ? state.error : null;
 
   useEffect(() => {
-    if (!keyword) return;
+    if (!q) return;
 
     let cancelled = false;
 
-    searchProducts(keyword)
+    searchProducts({
+      q,
+      page,
+      limit,
+      sort,
+      minPrice,
+      maxPrice,
+    })
       .then((result) => {
         if (cancelled) return;
         setState({
           key: requestKey,
           products: result.products,
-          total: result.total,
+          pagination: result.pagination,
           error: null,
         });
       })
@@ -37,7 +67,7 @@ export function useProductSearch(keyword: string) {
         setState({
           key: requestKey,
           products: [],
-          total: 0,
+          pagination: DEFAULT_PAGINATION,
           error: "Không thể tải kết quả tìm kiếm. Vui lòng thử lại.",
         });
       });
@@ -45,11 +75,11 @@ export function useProductSearch(keyword: string) {
     return () => {
       cancelled = true;
     };
-  }, [keyword, requestKey]);
+  }, [q, page, limit, sort, minPrice, maxPrice, requestKey]);
 
   const retry = useCallback(() => {
     setRetryCount((count) => count + 1);
   }, []);
 
-  return { products, total, isLoading, error, retry };
+  return { products, pagination, total, isLoading, error, retry };
 }

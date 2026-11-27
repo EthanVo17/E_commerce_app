@@ -20,7 +20,7 @@ export default function AppRoutes() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchPage />} />
-          <Route path="/product/:productId" element={<ProductPage />} />
+          <Route path="/product/:slug" element={<ProductPage />} />
           <Route path="/support" element={<SupportPage />} />
         </Route>
 

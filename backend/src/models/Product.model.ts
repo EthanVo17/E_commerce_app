@@ -75,9 +75,32 @@ const ProductSchema = new mongoose.Schema<ProductType>(
     variantLabel: {
       type: String,
     },
+    specifications: {
+      type: [
+        {
+          key: { type: String, required: true, trim: true },
+          value: { type: String, required: true, trim: true },
+        },
+      ],
+      default: [],
+    },
+    location: {
+      type: String,
+      trim: true,
+    },
     isActive: { type: Boolean, default: true, index: true },
   },
   { timestamps: true },
+);
+
+ProductSchema.index(
+  { name: "text", brand: "text", description: "text" },
+  { name: "product_text_search_idx" },
+);
+
+ProductSchema.index(
+  { isActive: 1, price: 1, soldCount: -1 },
+  { name: "product_active_price_sold_idx" },
 );
 
 const ProductModel = mongoose.model<ProductType>("products", ProductSchema);
